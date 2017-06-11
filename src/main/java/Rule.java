@@ -14,7 +14,7 @@ public class Rule {
 
     public Rule(String name, String wildcards, String and, int konto, int ammount, int margin) {
         if (wildcards.contains(";")) {
-            this.message = (ArrayList<String>) Arrays.asList(wildcards.split(";"));
+            this.message.addAll(Arrays.asList(wildcards.split(";")));
         } else {
             this.message.add(wildcards);
         }

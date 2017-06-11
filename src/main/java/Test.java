@@ -21,8 +21,9 @@ public class Test {
             workbook = Workbook.getWorkbook(f);
             System.out.println("Here I am2");
 
-            Sheet sheet = workbook.getSheet("Verificationer");
-            System.out.println(sheet.getCell("G7").getContents());
+            Sheet sheet = workbook.getSheet("Personer");
+            System.out.println(sheet.getCell("I8").getContents());
+            System.out.println(sheet.getCell(9,8).getContents());
             System.out.println("H8: " + sheet.getCell("H8").getContents().equals("")); //la celda devuelve un string vacío si no hay na
         } catch (IOException e) {
             e.printStackTrace();
