@@ -9,10 +9,10 @@ public class Rule {
     ArrayList<String> message = new ArrayList<String>(3);
     boolean and = false;
     int konto;
-    int ammount;
-    int margin;
+    Double ammount;
+    Double margin;
 
-    public Rule(String name, String wildcards, String and, int konto, int ammount, int margin) {
+    public Rule(String name, String wildcards, String and, int konto, Double ammount, Double margin) {
         if (wildcards.contains(";")) {
             this.message.addAll(Arrays.asList(wildcards.split(";")));
         } else {
@@ -21,19 +21,19 @@ public class Rule {
         this.name.add(name); //We add name to arraylist and then we substitute if it was a group
         if (this.name.contains("nlark")) {
             this.name.remove("nlark");
-            for (String n : ExcelToVisma.nlark) {
+            for (String n : ExcelToSIE.nlark) {
                 this.name.add(n);
             }
         }
         if (this.name.contains("nabr")) {
             this.name.remove("nabr");
-            for (String n : ExcelToVisma.nabr) {
+            for (String n : ExcelToSIE.nabr) {
                 this.name.add(n);
             }
         }
         if (this.name.contains("inne")) {
             this.name.remove("inne");
-            for (String n : ExcelToVisma.inne) {
+            for (String n : ExcelToSIE.inne) {
                 this.name.add(n);
             }
         }
@@ -47,8 +47,8 @@ public class Rule {
             this.ammount = ammount;
             this.margin = margin;
         } else {
-            this.ammount = -1;
-            this.margin = -1;
+            this.ammount = -1.0;
+            this.margin = -1.0;
         }
 
 
