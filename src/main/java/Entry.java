@@ -12,6 +12,7 @@ public class Entry {
     int kreditKonto;
     int debetKonto;
     int entryRow;
-    boolean imported;
+    int verfkNummer;
+    boolean exported;
     String benamning;
 }
