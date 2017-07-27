@@ -9,7 +9,8 @@ public class Entry {
     String message;
     Double ammount;
     String notes;
-    int konto;
+    int kreditKonto;
+    int debetKonto;
     String benamning;
     int entryRow;
 }

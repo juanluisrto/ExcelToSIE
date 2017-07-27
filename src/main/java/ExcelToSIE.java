@@ -22,7 +22,7 @@ import java.util.Scanner;
 
 public class ExcelToSIE {
 
-    private static String EXCEL_FILE_LOCATION = "C:\\Users\\juanl\\Documents\\Secretaria\\verificationer2016174.xlsx";
+    private static String EXCEL_FILE_LOCATION = "C:\\Users\\juanl\\Documents\\Secretaria\\verifikationer.xlsx";
 
 
     public static ArrayList<Entry> entries = new ArrayList<Entry>();
@@ -40,14 +40,14 @@ public class ExcelToSIE {
         workbook = null;
         try {
             File in = new File(EXCEL_FILE_LOCATION);
-            FileOutputStream out = new FileOutputStream(EXCEL_FILE_LOCATION.replaceFirst("1617", "1617copy"));
+            FileOutputStream out = new FileOutputStream(EXCEL_FILE_LOCATION + "out");
             workbook = new XSSFWorkbook(in);
             importGroups();
             importRules();
             importBenamning();
             importEntries();
             System.out.println(rules.toString());
-            System.out.println(benamningar.toString());
+            //System.out.println(benamningar.toString());
             //predictEntries();
             System.out.println("Do you want to export the entries to a SIE file? (y/n)");
             String answer = keyboard.nextLine().toLowerCase();
@@ -85,8 +85,8 @@ public class ExcelToSIE {
                 e.entryRow = row.getRowNum();
                 if (row.getCell(colNum("I")) != null) { // If there is already a prediction, import it.
                     Double d = row.getCell(colNum("I")).getNumericCellValue();
-                    e.konto = d.intValue();
-                    e.benamning = benamningar.get(e.konto);
+                    e.debetKonto = d.intValue();
+                    e.benamning = benamningar.get(e.debetKonto);
                 }
                 entries.add(e);
             }
@@ -97,38 +97,27 @@ public class ExcelToSIE {
     }
 
     public static void importGroups() {
-        XSSFSheet sheet = workbook.getSheet("Personer");
+        XSSFSheet sheet = workbook.getSheet("Regler");
+        int i = 7;
+        Row r = sheet.getRow(i);
 
-        Iterator<Row> it = sheet.rowIterator();
+        while (r.getCell(colNum("N"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL)!=null || r.getCell(colNum("Q"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL)!=null || r.getCell(colNum("U"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL)!=null){
+            if(r.getCell(colNum("N"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL)!=null){
+                nlark.add(r.getCell(colNum("N")).getStringCellValue());
+            }
+            if(r.getCell(colNum("Q"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL)!=null){
+                nabr.add(r.getCell(colNum("Q")).getStringCellValue());
+            }
+            if(r.getCell(colNum("U"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL)!=null){
+                inne.add(r.getCell(colNum("U")).getStringCellValue());
+            }
+            i++;
+            r = sheet.getRow(i);
 
-        Row r = it.next();
-        while (r.getCell(colNum("C")) == null || r.getCell(colNum("C")).getStringCellValue().equalsIgnoreCase("nlark") == false) {
-            r = it.next();
         }
-        it.next(); //jumps to (Persona,filtro)
-        r = it.next(); //first element
-        while (r.getCell(colNum("C")) != null) {
-            nlark.add(r.getCell(colNum("C")).getStringCellValue()); //adds all the search queries to nlark set
-            r = it.next();
-        }
-        while (r.getCell(colNum("C")) == null || r.getCell(colNum("C")).getStringCellValue().equalsIgnoreCase("nabr") == false) {
-            r = it.next();
-        }
-        it.next(); //jumps to (Persona,filtro)
-        r = it.next(); //first element
-
-        while (r.getCell(colNum("C")) != null && r.getCell(colNum("C")).getStringCellValue().equalsIgnoreCase("inne") == false) {
-            nabr.add(r.getCell(colNum("C")).getStringCellValue()); //adds all the search queries to nabr set
-            r = it.next();
-        }
-
-        it.next(); //jumps to (Persona,filtro)
-        r = it.next(); //first element
-
-        while (r.getCell(colNum("C")) != null) {
-            inne.add(r.getCell(colNum("C")).getStringCellValue()); //adds all the search queries to inne set
-            r = it.next();
-        }
+        System.out.println(nabr);
+        System.out.println(nlark);
+        System.out.println(inne);
     }
 
     public static void importRules() {
@@ -223,7 +212,7 @@ public class ExcelToSIE {
             success = success && ammountSuccess;
         }
         if (success) {
-            e.konto = r.konto;
+            e.debetKonto = r.konto;
             e.benamning = benamningar.get(r.konto);
         }
         return success;
@@ -386,7 +375,7 @@ public class ExcelToSIE {
                 if (e.ammount > 0) {
                     writer.write("#VER A " + i + " " + formatVisma.format(e.date) + " \"" + e.name + "_" + e.message + "\"\n" +
                             "{\n" +
-                            "   #TRANS " + e.konto + " {} -" + e.ammount + "\n" +
+                            "   #TRANS " + e.debetKonto + " {} -" + e.ammount + "\n" +
                             "   #TRANS 1020 {} " + e.ammount + "\n" +
                             "}\n");
                 }
@@ -394,7 +383,7 @@ public class ExcelToSIE {
                     Double opp = e.ammount*-1;
                     writer.write("#VER A " + i + " " + formatVisma.format(e.date) + " \"" + e.name + "_" + e.message + "\"\n" +
                             "{\n" +
-                            "   #TRANS " + e.konto + " {} " + opp + "\n" +
+                            "   #TRANS " + e.debetKonto + " {} " + opp + "\n" +
                             "   #TRANS 1020 {} " + e.ammount + "\n" +
                             "}\n");
                 }
