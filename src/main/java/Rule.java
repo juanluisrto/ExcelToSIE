@@ -8,11 +8,12 @@ public class Rule {
     ArrayList<String> name = new ArrayList<String>();
     ArrayList<String> message = new ArrayList<String>(3);
     boolean and = false;
-    int konto;
+    int kreditKonto;
+    int debetKonto;
     Double ammount;
     Double margin;
 
-    public Rule(String name, String wildcards, String and, int konto, Double ammount, Double margin) {
+    public Rule(String name, String wildcards, String and, int kreditKonto, int debetKonto, Double ammount, Double margin) {
         if (wildcards.contains(";")) {
             this.message.addAll(Arrays.asList(wildcards.split(";")));
         } else {
@@ -42,7 +43,8 @@ public class Rule {
         } else {
             this.and = false;
         }
-        this.konto = konto;
+        this.kreditKonto = kreditKonto;
+        this.debetKonto = debetKonto;
         if (ammount !=-1) {
             this.ammount = ammount;
             this.margin = margin;

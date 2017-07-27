@@ -42,6 +42,7 @@ public class ExcelToSIE {
             File in = new File(EXCEL_FILE_LOCATION);
             FileOutputStream out = new FileOutputStream(EXCEL_FILE_LOCATION + "out");
             workbook = new XSSFWorkbook(in);
+            workbook.setMissingCellPolicy(Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
             importGroups();
             importRules();
             importBenamning();
@@ -101,50 +102,58 @@ public class ExcelToSIE {
         int i = 7;
         Row r = sheet.getRow(i);
 
-        while (r.getCell(colNum("N"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL)!=null || r.getCell(colNum("Q"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL)!=null || r.getCell(colNum("U"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL)!=null){
-            if(r.getCell(colNum("N"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL)!=null){
+        while (r.getCell(colNum("N"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL) != null || r.getCell(colNum("Q"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL) != null || r.getCell(colNum("U"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL) != null) {
+            if (r.getCell(colNum("N"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL) != null) {
                 nlark.add(r.getCell(colNum("N")).getStringCellValue());
             }
-            if(r.getCell(colNum("Q"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL)!=null){
+            if (r.getCell(colNum("Q"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL) != null) {
                 nabr.add(r.getCell(colNum("Q")).getStringCellValue());
             }
-            if(r.getCell(colNum("U"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL)!=null){
+            if (r.getCell(colNum("U"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL) != null) {
                 inne.add(r.getCell(colNum("U")).getStringCellValue());
             }
             i++;
             r = sheet.getRow(i);
 
         }
-        System.out.println(nabr);
-        System.out.println(nlark);
-        System.out.println(inne);
     }
 
     public static void importRules() {
-        XSSFSheet sheet = workbook.getSheet("Personer");
-        XSSFRow row = sheet.getRow(7);
-        while (!row.getCell(colNum("F"), Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).getStringCellValue().equalsIgnoreCase("END")) {
-            //while (row.getCell(colNum("F"))!=null || row.getCell(colNum("H"))!=null || row.getCell(colNum("I"))!=null){
-            //The conditions check if there is a new rule by checking the name, message and ammount fields //.getRawValue() != ""
+        XSSFSheet sheet = workbook.getSheet("Regler");
+        XSSFRow r = sheet.getRow(7);
 
-            String name = row.getCell(colNum("F")).getStringCellValue();
-            String message = row.getCell(colNum("H")).getStringCellValue();
-            String and = row.getCell(colNum("G")).getStringCellValue();
+        while (r.getCell(colNum("A"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL) != null || r.getCell(colNum("C"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL) != null || r.getCell(colNum("D"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL) != null) {
+            String name = r.getCell(colNum("A")).getStringCellValue();
+            String and = r.getCell(colNum("B")).getStringCellValue();
+            String message = r.getCell(colNum("C")).getStringCellValue();
+            Double ammount = r.getCell(colNum("D")).getNumericCellValue();
+            Double margin = r.getCell(colNum("E")).getNumericCellValue();
+            Double d = r.getCell(colNum("G")).getNumericCellValue();
+            int kredit = d.intValue();
+            d = r.getCell(colNum("H")).getNumericCellValue();
+            int debet = d.intValue();
+            rules.add(new Rule(name, message, and, kredit, debet, ammount, margin));
+            r = sheet.getRow(r.getRowNum() + 1);
 
-            Double ammount;
-            Double margin;
 
-            try {
-                ammount = row.getCell(colNum("I")).getNumericCellValue();
-                margin = row.getCell(colNum("J")).getNumericCellValue();
-            } catch (Exception e) {
-                ammount = -1.;
-                margin = -1.;
-            }
-            Double d = row.getCell(colNum("L")).getNumericCellValue();
-            int konto = d.intValue();
-            rules.add(new Rule(name, message, and, konto, ammount, margin));
-            row = sheet.getRow(row.getRowNum() + 1);
+            /*while (!row.getCell(colNum("F"), Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).getStringCellValue().equalsIgnoreCase("END")) {
+                //while (row.getCell(colNum("F"))!=null || row.getCell(colNum("H"))!=null || row.getCell(colNum("I"))!=null){
+                //The conditions check if there is a new rule by checking the name, message and ammount fields //.getRawValue() != ""
+
+
+                Double ammount;
+                Double margin;
+
+                try {
+                    ammount = row.getCell(;
+                    margin = row.getCell(colNum("J")).getNumericCellValue();
+                } catch (Exception e) {
+                    ammount = -1.;
+                    margin = -1.;
+                }
+
+
+            }*/
         }
     }
 
@@ -212,8 +221,8 @@ public class ExcelToSIE {
             success = success && ammountSuccess;
         }
         if (success) {
-            e.debetKonto = r.konto;
-            e.benamning = benamningar.get(r.konto);
+            e.debetKonto = r.debetKonto;
+            e.benamning = benamningar.get(r.debetKonto);
         }
         return success;
     }
@@ -223,7 +232,7 @@ public class ExcelToSIE {
         XSSFRow row = sheet.getRow(e.entryRow);
         Cell kontoCell = row.createCell(colNum("I"));
         Cell benamningCell = row.createCell(colNum("J"));
-        kontoCell.setCellValue(r.konto);
+        kontoCell.setCellValue(r.debetKonto);
         benamningCell.setCellValue(e.benamning);
 
     }
@@ -378,9 +387,8 @@ public class ExcelToSIE {
                             "   #TRANS " + e.debetKonto + " {} -" + e.ammount + "\n" +
                             "   #TRANS 1020 {} " + e.ammount + "\n" +
                             "}\n");
-                }
-                else{
-                    Double opp = e.ammount*-1;
+                } else {
+                    Double opp = e.ammount * -1;
                     writer.write("#VER A " + i + " " + formatVisma.format(e.date) + " \"" + e.name + "_" + e.message + "\"\n" +
                             "{\n" +
                             "   #TRANS " + e.debetKonto + " {} " + opp + "\n" +
