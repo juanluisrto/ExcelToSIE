@@ -1,14 +1,17 @@
+import java.util.Date;
 
 /**
  * Created by juanl on 02/06/2017.
  */
 public class Entry {
-    String date;
+    Date date;
     String name;
     String message;
-    float ammount;
+    double ammount;
     String notes;
-    int konto;
-    String benamning;
-    String kontoCell;
+    int kreditKonto;
+    int debetKonto;
+    int entryRow;
+    int verfkNummer;
+    boolean exported;
 }
