@@ -1,9 +1,6 @@
 /**
  * Created by juanl on 02/06/2017.
  */
-
-
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
@@ -16,8 +13,6 @@ import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Scanner;
 
 public class ExcelToSIE {
@@ -35,8 +30,6 @@ public class ExcelToSIE {
 
     public static void main(String[] args) {
         Scanner keyboard = new Scanner(System.in);
-        /*System.out.println("Enter the name of your .xlsx file (default= verificationer.xlsx): ");
-        EXCEL_FILE_LOCATION = keyboard.next();*/
         workbook = null;
         try {
             //File in = new File(EXCEL_FILE_LOCATION);
@@ -67,8 +60,6 @@ public class ExcelToSIE {
         } catch (IOException e) {
             System.out.println("File not found. Your file should be in the same folder as the jar program");
             e.printStackTrace();
-       /* } catch (InvalidFormatException e) {
-            e.printStackTrace();*/
         }
 
     }
@@ -222,7 +213,6 @@ public class ExcelToSIE {
         entries.removeAll(toRemove);
         //SIE fil format: http://www.sie.se/wp-content/uploads/2014/01/SIE_filformat_ver_4B_080930.pdf
         //Teckenrepertoaren i filen ska vara IBM PC 8-bitars extended ASCII (Codepage 437)
-        //String dateSeconds = new SimpleDateFormat("dd-MM HH:mm:ss").format(new Date());
         SimpleDateFormat formatVisma = new SimpleDateFormat("yyyyMMdd");
         String dateVisma = formatVisma.format(new Date());
         String fileName = "verifikationer" + entries.size() + ".SI";
@@ -259,7 +249,6 @@ public class ExcelToSIE {
 
             writer.close();
         } catch (IOException e) {
-            // do something
         }
 
     }
@@ -274,7 +263,3 @@ public class ExcelToSIE {
 
 }
 
-/*
-
-
- */

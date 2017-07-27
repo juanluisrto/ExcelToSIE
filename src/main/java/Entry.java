@@ -14,5 +14,4 @@ public class Entry {
     int entryRow;
     int verfkNummer;
     boolean exported;
-    String benamning;
 }
