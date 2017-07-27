@@ -7,10 +7,11 @@ public class Entry {
     Date date;
     String name;
     String message;
-    Double ammount;
+    double ammount;
     String notes;
     int kreditKonto;
     int debetKonto;
-    String benamning;
     int entryRow;
+    boolean imported;
+    String benamning;
 }

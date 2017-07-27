@@ -45,7 +45,7 @@ public class ExcelToSIE {
             workbook.setMissingCellPolicy(Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
             importGroups();
             importRules();
-            importBenamning();
+            //importBenamning();
             importEntries();
             System.out.println(rules.toString());
             //System.out.println(benamningar.toString());
@@ -71,29 +71,27 @@ public class ExcelToSIE {
     }
 
     public static void importEntries() {
-        XSSFSheet sheet = workbook.getSheet("Verificationer");
-        XSSFRow row = sheet.getRow(6);
+        XSSFSheet sheet = workbook.getSheet("Verifikationer");
+        XSSFRow row = sheet.getRow(3);
 
-        while (row.getCell(colNum("H")) == null || !row.getCell(colNum("H")).getStringCellValue().equals("END")) {
-            if (row.getCell(colNum("H")) == null) { //if verification has not been exported yet (cell=null), import entry to be processed
-                Entry e = new Entry();
-                e.date = row.getCell(colNum("A")).getDateCellValue();
-                e.name = row.getCell(colNum("B")).getStringCellValue();
-                e.message = row.getCell(colNum("D")).getStringCellValue();
-                String editAm = row.getCell(colNum("F")).getStringCellValue().replace(".", "").replace(",", ".").replace("'", "").replace("\u00A0", "").trim(); //�
-                e.ammount = Double.parseDouble(editAm);
-                e.notes = row.getCell(colNum("E")).getStringCellValue();
-                e.entryRow = row.getRowNum();
-                if (row.getCell(colNum("I")) != null) { // If there is already a prediction, import it.
-                    Double d = row.getCell(colNum("I")).getNumericCellValue();
-                    e.debetKonto = d.intValue();
-                    e.benamning = benamningar.get(e.debetKonto);
-                }
-                entries.add(e);
-            }
+        while (row != null) {
+            Entry e = new Entry();
+            e.date = row.getCell(colNum("A")).getDateCellValue();
+            e.name = row.getCell(colNum("B")).getStringCellValue();
+            e.message = row.getCell(colNum("D")).getStringCellValue();
+            e.notes = row.getCell(colNum("E")).getStringCellValue();
+            String editAm = row.getCell(colNum("F")).getStringCellValue().replace(".", "").replace(",", ".").replace("'", "").replace("\u00A0", "").trim(); //�
+            e.ammount = Double.parseDouble(editAm);
+            e.imported = row.getCell(colNum("H")).getStringCellValue().equals("X");
+            Double d = row.getCell(colNum("I")).getNumericCellValue();
+            e.entryRow = d.intValue();
+            d = row.getCell(colNum("J")).getNumericCellValue();
+            e.debetKonto = d.intValue();
+            d = row.getCell(colNum("K")).getNumericCellValue();
+            e.kreditKonto = d.intValue();
+            entries.add(e);
             row = sheet.getRow(row.getRowNum() + 1);
         }
-
 
     }
 
@@ -134,26 +132,6 @@ public class ExcelToSIE {
             int debet = d.intValue();
             rules.add(new Rule(name, message, and, kredit, debet, ammount, margin));
             r = sheet.getRow(r.getRowNum() + 1);
-
-
-            /*while (!row.getCell(colNum("F"), Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).getStringCellValue().equalsIgnoreCase("END")) {
-                //while (row.getCell(colNum("F"))!=null || row.getCell(colNum("H"))!=null || row.getCell(colNum("I"))!=null){
-                //The conditions check if there is a new rule by checking the name, message and ammount fields //.getRawValue() != ""
-
-
-                Double ammount;
-                Double margin;
-
-                try {
-                    ammount = row.getCell(;
-                    margin = row.getCell(colNum("J")).getNumericCellValue();
-                } catch (Exception e) {
-                    ammount = -1.;
-                    margin = -1.;
-                }
-
-
-            }*/
         }
     }
 
