@@ -4,11 +4,12 @@ import java.util.HashMap;
 /**
  * Created by juanl on 13/10/2017.
  */
-public class Multiple {
+public abstract class Multiple extends VerificationParent{
     Date date;
     String message;
-    int ver_nummer;
+    //int verfkNummer; inherited
     boolean exported;
     HashMap <Integer,Double> konton;
+
 
 }

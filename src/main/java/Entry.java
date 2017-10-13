@@ -3,7 +3,7 @@ import java.util.Date;
 /**
  * Created by juanl on 02/06/2017.
  */
-public class Entry {
+public class Entry extends VerificationParent{
     Date date;
     String name;
     String message;
@@ -12,6 +12,10 @@ public class Entry {
     int kreditKonto;
     int debetKonto;
     int entryRow;
-    int verfkNummer;
+    //int verfkNummer; inherited
     boolean exported;
+
+    public void print() {
+
+    }
 }

@@ -27,6 +27,7 @@ public class ExcelToSIE {
     public static ArrayList<String> nlark = new ArrayList<String>();
     public static ArrayList<String> nabr = new ArrayList<String>();
     public static ArrayList<String> inne = new ArrayList<String>();
+    public static ArrayList<Multiple> multiples = new ArrayList<Multiple>();
     public static XSSFWorkbook workbook;
     public static String fnamn;
 
@@ -60,12 +61,41 @@ public class ExcelToSIE {
 
 
         } catch (IOException e) {
-            System.out.println("File not found. Your file should be in the same folder as the jar program");
+            System.out.println(" Excel file not found. Your file should be in the same folder as the jar program");
             e.printStackTrace();
         }
 
     }
 
+    public static void importMultiples() {
+        XSSFSheet sheet = workbook.getSheet("Multipel");
+        XSSFRow row = sheet.getRow(3);
+        Multiple m = null;
+        Double d;
+        while (row!=null && row.getCell(colNum("E"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL)!=null){
+            if (row.getCell(colNum("A"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL)!=null){
+                m = new Multiple();
+                m.date = row.getCell(colNum("A")).getDateCellValue();
+                d = row.getCell(colNum("B")).getNumericCellValue();
+                m.verfkNummer = d.intValue();
+                m.exported = row.getCell(colNum("C")).getStringCellValue().equals("X");
+                m.message = row.getCell(colNum("D")).getStringCellValue();
+                multiples.add(m);
+            }
+            d = row.getCell(colNum("E")).getNumericCellValue();
+            Integer konto = d.intValue();
+            //retrieves value from debet
+            Double ammount = row.getCell(colNum("F"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL).getNumericCellValue();
+            if (ammount == null){ //if the debet cell is null, then the kredit cell has a value
+                   ammount = row.getCell(colNum("G"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL).getNumericCellValue();
+                   ammount = -1*ammount;
+            }
+            m.konton.put(konto,ammount);
+            row = sheet.getRow(row.getRowNum()+1);
+        }
+
+
+        }
 
     public static void importEntries() {
         XSSFSheet sheet = workbook.getSheet("Verifikationer");
