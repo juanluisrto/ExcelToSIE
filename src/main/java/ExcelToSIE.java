@@ -270,20 +270,7 @@ public class ExcelToSIE {
             for (int i = 0; i < entries.size(); i++) {
                 Entry e = entries.get(i);
                 //plus för debet och minus för kredit
-                if (e.ammount > 0) {
-                    writer.write("#VER A " + e.verfkNummer + " " + formatVisma.format(e.date) + " \"" + e.name + "_" + e.message + "\"\n" +
-                            "{\n" +
-                            "   #TRANS " + e.debetKonto + " {} -" + e.ammount + "\n" +
-                            "   #TRANS " + e.kreditKonto + " {}  " + e.ammount + "\n" +
-                            "}\n");
-                } else {
-                    Double opp = e.ammount * -1;
-                    writer.write("#VER A " + e.verfkNummer + " " + formatVisma.format(e.date) + " \"" + e.name + "_" + e.message + "\"\n" +
-                            "{\n" +
-                            "   #TRANS " + e.debetKonto + " {} " + opp + "\n" +
-                            "   #TRANS " + e.kreditKonto + " {}  " + e.ammount + "\n" +
-                            "}\n");
-                }
+               e.print(writer);
             }
 
             writer.close();
