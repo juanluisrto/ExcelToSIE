@@ -1,6 +1,7 @@
 /**
  * Created by juanl on 02/06/2017.
  */
+
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
@@ -17,7 +18,8 @@ import java.util.Scanner;
 
 public class ExcelToSIE {
 
-    private static String EXCEL_FILE_LOCATION = "verifikationer.xlsx";
+   private static String EXCEL_FILE_LOCATION = "C:\\Users\\juanl\\Documents\\Secretaria\\verifikationer.xlsx";
+   //private static String EXCEL_FILE_LOCATION = "verifikationer.xlsx";
 
 
     public static ArrayList<Entry> entries = new ArrayList<Entry>();
@@ -64,18 +66,25 @@ public class ExcelToSIE {
 
     }
 
+
     public static void importEntries() {
         XSSFSheet sheet = workbook.getSheet("Verifikationer");
         XSSFRow row = sheet.getRow(3);
 
-        while (!row.getCell(colNum("A")).getCellTypeEnum().equals(CellType.BLANK)) {
+        while (row!=null && row.getCell(colNum("A"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL)!=null){
+        //while (!row.getCell(colNum("A")).getCellTypeEnum().equals(CellType.BLANK)) {
             Entry e = new Entry();
             e.date = row.getCell(colNum("A")).getDateCellValue();
             e.name = row.getCell(colNum("B")).getStringCellValue();
             e.message = row.getCell(colNum("D")).getStringCellValue();
             e.notes = row.getCell(colNum("E")).getStringCellValue();
-            String editAm = row.getCell(colNum("F")).getStringCellValue().replace(".", "").replace(",", ".").replace("'", "").replace("\u00A0", "").trim(); //�
-            e.ammount = Double.parseDouble(editAm);
+            Cell ammount = row.getCell(colNum("F"));
+            if (ammount.getCellTypeEnum().equals(CellType.NUMERIC)) {
+                e.ammount = ammount.getNumericCellValue();
+            } else {
+                String editAm = row.getCell(colNum("F")).getStringCellValue().replace(".", "").replace(",", ".").replace("'", "").replace("\u00A0", "").trim(); //�
+                e.ammount = Double.parseDouble(editAm);
+            }
             e.exported = row.getCell(colNum("H")).getStringCellValue().equals("X");
             Double d = row.getCell(colNum("I")).getNumericCellValue();
             e.verfkNummer = d.intValue();
@@ -201,7 +210,7 @@ public class ExcelToSIE {
         XSSFSheet sheet = workbook.getSheet("Verifikationer");
         ArrayList<Entry> toRemove = new ArrayList<Entry>();
         for (Entry e : entries) {
-            if (e.debetKonto == 0 || e.exported==true) {
+            if (e.debetKonto == 0 || e.exported == true) {
                 toRemove.add(e); //we remove the entries without prediction and the ones already exported
             } else {
                 XSSFRow row = sheet.getRow(e.entryRow);
@@ -234,7 +243,7 @@ public class ExcelToSIE {
                 if (e.ammount > 0) {
                     writer.write("#VER A " + e.verfkNummer + " " + formatVisma.format(e.date) + " \"" + e.name + "_" + e.message + "\"\n" +
                             "{\n" +
-                            "   #TRANS " + e.debetKonto  + " {} -" + e.ammount + "\n" +
+                            "   #TRANS " + e.debetKonto + " {} -" + e.ammount + "\n" +
                             "   #TRANS " + e.kreditKonto + " {}  " + e.ammount + "\n" +
                             "}\n");
                 } else {
