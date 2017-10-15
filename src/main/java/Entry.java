@@ -14,13 +14,15 @@ public class Entry extends VerificationParent{
     String notes;
     int kreditKonto;
     int debetKonto;
-    int entryRow;
-    //int verfkNummer; inherited
-    boolean exported;
+    //inherited
+    //int entryRow;
+    //int verfkNummer;
+    //boolean exported;
 
     public void print(BufferedWriter writer) throws IOException {
         SimpleDateFormat formatVisma = new SimpleDateFormat("yyyyMMdd");
         Entry e = this;
+        //plus för debet och minus för kredit
         if (e.ammount > 0) {
             writer.write("#VER A " + e.verfkNummer + " " + formatVisma.format(e.date) + " \"" + e.name + "_" + e.message + "\"\n" +
                     "{\n" +

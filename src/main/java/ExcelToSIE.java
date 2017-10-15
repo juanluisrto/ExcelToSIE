@@ -2,6 +2,7 @@
  * Created by juanl on 02/06/2017.
  */
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
@@ -10,16 +11,18 @@ import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Scanner;
 
 public class ExcelToSIE {
 
-   private static String EXCEL_FILE_LOCATION = "C:\\Users\\juanl\\Documents\\Secretaria\\verifikationer.xlsx";
-   //private static String EXCEL_FILE_LOCATION = "verifikationer.xlsx";
+   //private static String EXCEL_FILE_LOCATION = "C:\\Users\\juanl\\Documents\\Secretaria\\verifikationer.xlsx";
+   private static String EXCEL_FILE_LOCATION = "verifikationer.xlsx";
 
 
     public static ArrayList<Entry> entries = new ArrayList<Entry>();
@@ -41,6 +44,7 @@ public class ExcelToSIE {
             workbook.setMissingCellPolicy(Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
             importGroups();
             importRules();
+            importMultiples();
             importEntries();
             System.out.println("Do you want to predict entries with the set of rules? (y/n)");
             String answer = keyboard.nextLine().toLowerCase();
@@ -61,7 +65,7 @@ public class ExcelToSIE {
 
 
         } catch (IOException e) {
-            System.out.println(" Excel file not found. Your file should be in the same folder as the jar program");
+            System.out.println(" Excel file not found. Your file should be in the same folder as the jar program and cannot be opened");
             e.printStackTrace();
         }
 
@@ -80,17 +84,21 @@ public class ExcelToSIE {
                 m.verfkNummer = d.intValue();
                 m.exported = row.getCell(colNum("C")).getStringCellValue().equals("X");
                 m.message = row.getCell(colNum("D")).getStringCellValue();
+                m.entryRow = row.getRowNum();
                 multiples.add(m);
             }
             d = row.getCell(colNum("E")).getNumericCellValue();
             Integer konto = d.intValue();
             //retrieves value from debet
-            Double ammount = row.getCell(colNum("F"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL).getNumericCellValue();
-            if (ammount == null){ //if the debet cell is null, then the kredit cell has a value
-                   ammount = row.getCell(colNum("G"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL).getNumericCellValue();
-                   ammount = -1*ammount;
+            Double ammount;
+            try { ammount = row.getCell(colNum("F"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL).getNumericCellValue();}
+            //if the debet cell is null, then the kredit cell has a value
+            catch (NullPointerException e){
+                ammount = row.getCell(colNum("G"), Row.MissingCellPolicy.RETURN_BLANK_AS_NULL).getNumericCellValue();
+                ammount = -1*ammount;
             }
-            m.konton.put(konto,ammount);
+
+            m.konton.add(Pair.of(konto,ammount));
             row = sheet.getRow(row.getRowNum()+1);
         }
 
@@ -238,10 +246,10 @@ public class ExcelToSIE {
 
     public static void exportVerifikationer() {
         XSSFSheet sheet = workbook.getSheet("Verifikationer");
-        ArrayList<Entry> toRemove = new ArrayList<Entry>();
+        ArrayList<Entry> entryToRemove = new ArrayList<Entry>();
         for (Entry e : entries) {
             if (e.debetKonto == 0 || e.exported == true) {
-                toRemove.add(e); //we remove the entries without prediction and the ones already exported
+                entryToRemove.add(e); //we remove the entries without prediction and the ones already exported
             } else {
                 XSSFRow row = sheet.getRow(e.entryRow);
                 Cell checkCell = row.createCell(colNum("H"));
@@ -249,12 +257,31 @@ public class ExcelToSIE {
             }
 
         }
-        entries.removeAll(toRemove);
+        entries.removeAll(entryToRemove);
+
+        sheet = workbook.getSheet("Multipel");
+        ArrayList<Multiple> multipleToRemove = new ArrayList<Multiple>();
+        for (Multiple e : multiples) {
+            if (e.exported == true) {
+                multipleToRemove.add(e);
+            } else {
+                XSSFRow row = sheet.getRow(e.entryRow);
+                Cell checkCell = row.createCell(colNum("C"));
+                checkCell.setCellValue("X");
+            }
+        }
+        multiples.removeAll(multipleToRemove);
+
+        ArrayList<VerificationParent> allTogether = new ArrayList<VerificationParent>();
+        allTogether.addAll(entries);
+        allTogether.addAll(multiples);
+        Collections.sort(allTogether);
+
         //SIE fil format: http://www.sie.se/wp-content/uploads/2014/01/SIE_filformat_ver_4B_080930.pdf
         //Teckenrepertoaren i filen ska vara IBM PC 8-bitars extended ASCII (Codepage 437)
         SimpleDateFormat formatVisma = new SimpleDateFormat("yyyyMMdd");
         String dateVisma = formatVisma.format(new Date());
-        String fileName = "verifikationer" + entries.size() + ".SI";
+        String fileName = "verifikationer_n" + allTogether.size()+"_"+ dateVisma + ".SI";
         try {
             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
                     new FileOutputStream(fileName), "ibm-437"));
@@ -267,10 +294,9 @@ public class ExcelToSIE {
                     "#FNAMN " + fnamn + "\n" +
                     "#KPTYP EUBAS97\n");
 
-            for (int i = 0; i < entries.size(); i++) {
-                Entry e = entries.get(i);
-                //plus för debet och minus för kredit
-               e.print(writer);
+            for (int i = 0; i < allTogether.size(); i++) {
+                VerificationParent e = allTogether.get(i);
+                e.print(writer);
             }
 
             writer.close();
